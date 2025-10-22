@@ -1,4 +1,5 @@
 
 __pycache__/
 .venv/
-chat.db
+terraform/self-signed.crt
+terraform/self-signed.key

@@ -1,48 +1,11 @@
 import streamlit as st
-import sqlite3
 import random
-import os
-import subprocess
 from streamlit_autorefresh import st_autorefresh
-
-# --- SCHEMA VERSION ---
-CURRENT_SCHEMA_VERSION = 2
+import sqlalchemy
+import database
 
 # --- DATABASE SETUP ---
-def initialize_database():
-    """
-    Checks if the database schema is up to date. If not, it deletes the
-    database file and recreates it.
-    """
-    conn = sqlite3.connect('chat.db')
-    c = conn.cursor()
-    recreate_db = False
-    try:
-        # Check for schema version table and version number
-        c.execute("SELECT version FROM schema_version")
-        version = c.fetchone()[0]
-        if version != CURRENT_SCHEMA_VERSION:
-            recreate_db = True
-
-        # Check for channel column in messages table
-        c.execute("PRAGMA table_info(messages)")
-        columns = [info[1] for info in c.fetchall()]
-        if 'channel' not in columns:
-            recreate_db = True
-
-    except (sqlite3.OperationalError, TypeError):
-        recreate_db = True
-
-    conn.close()
-
-    if recreate_db:
-        if os.path.exists('chat.db'):
-            os.remove('chat.db')
-        subprocess.run(["python", "database.py"])
-
-initialize_database()
-conn = sqlite3.connect('chat.db')
-c = conn.cursor()
+engine = database.connect_with_connector()
 
 # --- USER AND AVATAR SETUP ---
 USER_LIST = [
@@ -138,20 +101,37 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def show_messages(channel):
-    c.execute("SELECT username, message, avatar FROM messages WHERE channel = ? ORDER BY timestamp ASC", (channel,))
-    messages = c.fetchall()
-    for username, message, avatar in messages:
-        display_name = "user" if username == st.session_state.user_info[0] else username
-        with st.chat_message(display_name, avatar=avatar):
-            st.markdown(f"**{username}**")
-            st.write(f"{message}")
+    with engine.connect() as conn:
+        result = conn.execute(
+            sqlalchemy.text(
+                "SELECT username, message, avatar FROM messages WHERE channel = :channel ORDER BY timestamp ASC"
+            ),
+            {"channel": channel},
+        )
+        messages = result.fetchall()
+        for username, message, avatar in messages:
+            display_name = "user" if username == st.session_state.user_info[0] else username
+            with st.chat_message(display_name, avatar=avatar):
+                st.markdown(f"**{username}**")
+                st.write(f"{message}")
 
 show_messages(current_channel)
 
 if prompt := st.chat_input("What is up?"):
     username, avatar = st.session_state.user_info
-    c.execute("INSERT INTO messages (username, message, avatar, channel) VALUES (?, ?, ?, ?)", (username, prompt, avatar, current_channel))
-    conn.commit()
+    with engine.connect() as conn:
+        conn.execute(
+            sqlalchemy.text(
+                "INSERT INTO messages (username, message, avatar, channel) VALUES (:username, :message, :avatar, :channel)"
+            ),
+            {
+                "username": username,
+                "message": prompt,
+                "avatar": avatar,
+                "channel": current_channel,
+            },
+        )
+        conn.commit()
     st.rerun()
 
 st_autorefresh(interval=5000, limit=None)
