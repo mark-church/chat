@@ -13,5 +13,13 @@ c.execute("""
     )
 """)
 
+c.execute("""
+    CREATE TABLE IF NOT EXISTS schema_version (
+        version INTEGER
+    )
+""")
+
+c.execute("INSERT INTO schema_version (version) VALUES (1)")
+
 conn.commit()
 conn.close()

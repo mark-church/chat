@@ -1,18 +1,40 @@
 import streamlit as st
 import sqlite3
 import random
+import os
+import subprocess
+import time
+
+# --- SCHEMA VERSION ---
+CURRENT_SCHEMA_VERSION = 1
 
 # --- DATABASE SETUP ---
+def check_db_version():
+    conn = sqlite3.connect('chat.db')
+    c = conn.cursor()
+    try:
+        c.execute("SELECT version FROM schema_version")
+        version = c.fetchone()[0]
+        if version != CURRENT_SCHEMA_VERSION:
+            conn.close()
+            os.remove('chat.db')
+            subprocess.run(["python", "database.py"])
+    except sqlite3.OperationalError:
+        conn.close()
+        os.remove('chat.db')
+        subprocess.run(["python", "database.py"])
+
+check_db_version()
 conn = sqlite3.connect('chat.db')
 c = conn.cursor()
 
 # --- USER AND AVATAR SETUP ---
 USER_LIST = [
-    ("Alice", "😊"), ("Bob", "😎"), ("Charlie", "😂"), ("David", "😜"),
-    ("Eve", "😍"), ("Frank", "🥳"), ("Grace", "🤩"), ("Heidi", "🤯"),
-    ("Ivan", "🤗"), ("Judy", "😇"), ("Kevin", "🤪"), ("Linda", "🥰"),
-    ("Mallory", "🤫"), ("Nancy", "🤔"), ("Oscar", "🤠"), ("Peggy", "🤡"),
-    ("Quentin", "🤓"), ("Romeo", "😴"), ("Sybil", "🥺"), ("Ted", "🤖")
+    ("Alice", "🍎"), ("Bob", "🍌"), ("Charlie", "🚀"), ("David", "🚗"),
+    ("Eve", "🍕"), ("Frank", "🎸"), ("Grace", "⚽️"), ("Heidi", "📚"),
+    ("Ivan", "💡"), ("Judy", "💻"), ("Kevin", "🎉"), ("Linda", "🎁"),
+    ("Mallory", "💎"), ("Nancy", "👑"), ("Oscar", "🌟"), ("Peggy", "🔥"),
+    ("Quentin", "🌊"), ("Romeo", "🌍"), ("Sybil", "🌙"), ("Ted", "☀️")
 ]
 user_map = {name: avatar for name, avatar in USER_LIST}
 
@@ -45,3 +67,6 @@ if prompt := st.chat_input("What is up?"):
     c.execute("INSERT INTO messages (username, message, avatar) VALUES (?, ?, ?)", (username, prompt, avatar))
     conn.commit()
     st.rerun()
+
+time.sleep(1)
+st.rerun()
