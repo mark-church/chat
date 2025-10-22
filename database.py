@@ -9,6 +9,7 @@ c.execute("""
         username TEXT,
         message TEXT,
         avatar TEXT,
+        channel TEXT,
         timestamp DATETIME DEFAULT CURRENT_TIMESTAMP
     )
 """)
@@ -19,7 +20,7 @@ c.execute("""
     )
 """)
 
-c.execute("INSERT INTO schema_version (version) VALUES (1)")
+c.execute("INSERT INTO schema_version (version) VALUES (2)")
 
 conn.commit()
 conn.close()
