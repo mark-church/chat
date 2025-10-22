@@ -29,32 +29,7 @@ resource "google_artifact_registry_repository" "main" {
   format       = "DOCKER"
 }
 
-resource "google_cloudbuild_trigger" "main" {
-  project  = var.project_id
-  name     = "${var.app_name}-build-trigger"
-  location = var.region
 
-  github {
-    owner = var.github_owner
-    name  = var.github_repo_name
-    push {
-      branch = "^main$"
-    }
-  }
-
-  substitutions = {
-    _IMAGE_NAME = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}"
-  }
-
-  build {
-    step {
-      name = "gcr.io/cloud-builders/docker"
-      args = ["build", "-t", "$_IMAGE_NAME:$COMMIT_SHA", "."]
-    }
-
-    images = ["$_IMAGE_NAME:$COMMIT_SHA"]
-  }
-}
 
 resource "google_cloud_run_v2_service" "main" {
   project  = var.project_id
@@ -62,7 +37,7 @@ resource "google_cloud_run_v2_service" "main" {
   location = var.region
 
   template {
-    service_account = google_service_account.app.email
+    service_account = var.app_service_account_email
 
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:latest" # TODO: Use a specific image tag

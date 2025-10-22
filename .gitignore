@@ -2,13 +2,15 @@
 __pycache__/
 .venv/
 chat.db
-terraform/self-signed.crt
-terraform/self-signed.key
 terraform/.terraform/
 
 # Terraform state files
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+
+# Ignore self-signed certificates
+terraform/infra/self-signed.crt
+terraform/infra/self-signed.key
 
 # Ignore Terraform provider binaries and modules
 .terraform
