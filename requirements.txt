@@ -6,5 +6,4 @@ SQLAlchemy
 cloud-sql-python-connector[pg8000]
 streamlit-autorefresh
 names
-gunicorn
-httpx
+supervisor

@@ -35,13 +35,14 @@ data "google_project" "project" {
   project_id = var.project_id
 }
 
-# Grant Cloud Build service account necessary permissions for building and pushing images
-resource "google_project_iam_member" "cloudbuild_permissions" {
+# Grant the default Compute Engine service account permissions for manual builds
+resource "google_project_iam_member" "compute_build_permissions" {
   project = var.project_id
   for_each = toset([
-    "roles/storage.admin",
-    "roles/artifactregistry.writer",
+    "roles/artifactregistry.admin",
+    "roles/logging.logWriter",
   ])
   role   = each.key
   member = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
 }
+

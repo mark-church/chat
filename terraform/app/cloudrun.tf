@@ -30,6 +30,16 @@ resource "google_cloud_run_v2_service" "main" {
 
   template {
     service_account = var.app_service_account_email
+    startup_cpu_boost = true
+
+    startup_probe {
+      timeout_seconds = 120
+      period_seconds = 1
+      failure_threshold = 120
+      tcp_socket {
+        port = 8080
+      }
+    }
 
     containers {
       image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${data.archive_file.source.output_sha}"
