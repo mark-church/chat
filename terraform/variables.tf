@@ -41,3 +41,13 @@ variable "db_user" {
   default     = "chat-user"
 }
 
+variable "github_owner" {
+  description = "The GitHub owner (user or organization)."
+  type        = string
+}
+
+variable "github_repo_name" {
+  description = "The name of the GitHub repository."
+  type        = string
+}
+

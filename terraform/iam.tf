@@ -35,3 +35,19 @@ resource "google_project_iam_member" "app_roles" {
   role   = each.key
   member = google_service_account.app.member
 }
+
+# Data source to get the project number
+data "google_project" "project" {
+  project_id = var.project_id
+}
+
+# Grant Cloud Build service account necessary permissions for building and pushing images
+resource "google_project_iam_member" "cloudbuild_permissions" {
+  project = var.project_id
+  for_each = toset([
+    "roles/storage.admin",
+    "roles/artifactregistry.writer",
+  ])
+  role   = each.key
+  member = "serviceAccount:${data.google_project.project.number}-compute@developer.gserviceaccount.com"
+}

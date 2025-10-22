@@ -35,8 +35,8 @@ resource "google_cloudbuild_trigger" "main" {
   location = var.region
 
   github {
-    owner = "your-github-owner" # TODO: Replace with your GitHub owner
-    name  = "your-github-repo"  # TODO: Replace with your GitHub repo
+    owner = var.github_owner
+    name  = var.github_repo_name
     push {
       branch = "^main$"
     }
