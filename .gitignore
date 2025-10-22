@@ -14,3 +14,6 @@ terraform/infra/self-signed.key
 
 # Ignore Terraform provider binaries and modules
 .terraform
+
+# Ignore generated source archive
+terraform/app/source.zip

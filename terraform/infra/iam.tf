@@ -12,13 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "google_project_service" "iam_services" {
-  for_each = toset([
-    "iam.googleapis.com",
-  ])
-  project = var.project_id
-  service = each.key
-}
+
 
 resource "google_service_account" "app" {
   project      = var.project_id

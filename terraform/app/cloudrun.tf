@@ -12,15 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "google_project_service" "run_services" {
-  for_each = toset([
-    "run.googleapis.com",
-    "artifactregistry.googleapis.com",
-    "cloudbuild.googleapis.com",
-  ])
-  project = var.project_id
-  service = each.key
-}
+
 
 resource "google_artifact_registry_repository" "main" {
   project      = var.project_id
@@ -40,7 +32,7 @@ resource "google_cloud_run_v2_service" "main" {
     service_account = var.app_service_account_email
 
     containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:latest" # TODO: Use a specific image tag
+      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${data.archive_file.source.output_sha}"
       ports {
         container_port = 8080
       }
@@ -72,4 +64,16 @@ resource "google_cloud_run_v2_service" "main" {
       args  = ["--structured-logs", "--port=5432", google_sql_database_instance.main.connection_name]
     }
   }
+
+  depends_on = [
+    null_resource.gcloud_build
+  ]
+}
+
+resource "google_cloud_run_v2_service_iam_binding" "allow_unauthenticated" {
+  project  = google_cloud_run_v2_service.main.project
+  location = google_cloud_run_v2_service.main.location
+  name     = google_cloud_run_v2_service.main.name
+  role     = "roles/run.invoker"
+  members   = ["allUsers"]
 }

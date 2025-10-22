@@ -7,11 +7,10 @@ terraform {
 }
 
 module "infra" {
-  source                 = "./infra"
-  project_id             = var.project_id
-  region                 = var.region
-  app_name               = var.app_name
-  cloud_run_service_name = module.app.cloud_run_service_name
+  source     = "./infra"
+  project_id = var.project_id
+  region     = var.region
+  app_name   = var.app_name
 }
 
 module "app" {

@@ -12,14 +12,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-resource "google_project_service" "db_services" {
-  for_each = toset([
-    "sqladmin.googleapis.com",
-    "secretmanager.googleapis.com",
-  ])
-  project = var.project_id
-  service = each.key
-}
+
 
 resource "google_sql_database_instance" "main" {
   project             = var.project_id
