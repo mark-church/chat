@@ -9,3 +9,6 @@ terraform/.terraform/
 # Terraform state files
 terraform/terraform.tfstate
 terraform/terraform.tfstate.backup
+
+# Ignore Terraform provider binaries and modules
+.terraform
