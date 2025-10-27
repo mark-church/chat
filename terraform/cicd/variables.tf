@@ -27,3 +27,9 @@ variable "artifact_registry_repository_id" {
   description = "The ID of the Artifact Registry repository."
   type        = string
 }
+
+variable "service_name" {
+  description = "The service name within the ADC application component to update."
+  type        = string
+  default     = "frontend-service"
+}

@@ -27,7 +27,10 @@ resource "google_cloudbuild_trigger" "main" {
 
   substitutions = {
     _IMAGE_NAME = "${var.region}-docker.pkg.dev/${var.project_id}/${var.app_name}-repo"
+    _SERVICE_NAME   = var.service_name
   }
+
+  filename = "cloudbuild.yaml"
 
   build {
     step {

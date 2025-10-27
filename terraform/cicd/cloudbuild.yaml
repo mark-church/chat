@@ -1,0 +1,63 @@
+steps:
+- name: 'gcr.io/cloud-builders/docker'
+  args: ['build', '-t', 'gcr.io/$PROJECT_ID/adc-cicd/adc-cr-demo:${TAG_NAME}', '--build-arg', 'IMAGE_TAG=$TAG_NAME', '-f', 'adc-cr-demo/Dockerfile', '.']
+  id: 'BuildImage'
+
+- name: 'gcr.io/google.com/cloudsdktool/cloud-sdk'
+  entrypoint: bash
+  args:
+      - -c
+      - |
+       set -e
+       set -x
+       echo "Updating apt-get and installing jq..."
+       if ! command -v jq > /dev/null
+       then
+         apt-get update && apt-get install -y jq
+       fi
+
+       echo "Fetching latest app config..."
+       gcloud alpha design-center spaces applications describe my-application --space=my-space --project=my-project --location=us-central1   --format="json(componentParameters)"   | jq '.componentParameters | map(del(.state))' > component_parameters.json
+
+       if [ ! -s component_parameters.json ]; then
+          echo "ERROR: Failed to fetch component parameters or it's empty."
+          exit 1
+       fi
+       cat component_parameters.json
+
+       echo "Updating image for service: ${_SERVICE_NAME} in my-application..."
+       jq --arg service_name "${_SERVICE_NAME}" --arg image_name "${_IMAGE_NAME}" '
+          map(
+            if (.parameters[] | select(.key == "service_name").value) == $service_name then
+              .parameters |= map(
+                if .key == "containers" then
+                  .value |= map(.container_image = $image_name)
+                else
+                  .
+                end
+              )
+            else
+              .
+            end
+          )
+        ' component_parameters.json > temp.json && mv temp.json component_parameters.json
+
+       cat temp.json
+
+       gcloud alpha design-center spaces applications update my-application   --space=my-space --project=my-project --location=us-central1   --component-parameters=component_parameters.json
+
+       echo "Deploying application....."
+       gcloud alpha design-center spaces applications deploy my-application --space=my-space --project=my-project --location=us-central1
+
+       rm -f component_parameters.json
+  id: 'UpdateAndDeployADC'
+
+images: ['${_IMAGE_NAME}']
+
+substitutions:
+    _IMAGE_NAME: 'gcr.io/${PROJECT_ID}/adc-cicd/adc-cr-demo:${TAG_NAME}'
+    _SERVICE_NAME: 'frontend-service'
+
+options:
+  logging: CLOUD_LOGGING_ONLY
+  dynamicSubstitutions: true
