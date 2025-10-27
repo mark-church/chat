@@ -30,6 +30,7 @@ resource "google_cloudbuild_trigger" "main" {
     _SERVICE_NAME = var.service_name
     _SPACE        = var.space
     _APP_NAME     = var.app_name
+    _REGION       = var.region
   }
 
   build {
@@ -47,16 +48,16 @@ resource "google_cloudbuild_trigger" "main" {
           apt-get update && apt-get install -y jq curl
 
           echo "Fetching latest app config..."
-          gcloud alpha design-center spaces applications describe ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${var.region} --format="json(componentParameters)" | jq '.componentParameters | map(del(.state, .componentParameterSchema))' > component_parameters.json
+          gcloud alpha design-center spaces applications describe ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${_REGION} --format="json(componentParameters)" | jq '.componentParameters | map(del(.state, .componentParameterSchema))' > component_parameters.json
 
           echo "Updating ${_SERVICE_NAME} CR image..."
           # JQ command from YAML, only service name is parameterized, using _IMAGE_NAME
           jq 'map(if .parameters[] | select(.key == "service_name").value == "'"${_SERVICE_NAME}"'" then .parameters |= map(if .key == "containers" then .value |= map(.container_image = "'"${_IMAGE_NAME}:${COMMIT_SHA}"'") else . end) else . end)' component_parameters.json > temp.json && mv temp.json component_parameters.json
 
-          gcloud alpha design-center spaces applications update ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${var.region} --component-parameters=component_parameters.json
+          gcloud alpha design-center spaces applications update ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${_REGION} --component-parameters=component_parameters.json
 
           echo "Deploying application....."
-          gcloud alpha design-center spaces applications deploy ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${var.region} --async
+          gcloud alpha design-center spaces applications deploy ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${_REGION} --async
           
           rm -f component_parameters.json
         EOT
