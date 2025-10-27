@@ -1,8 +1,9 @@
 terraform {
   required_version = ">= 1.3"
 
-  backend "local" {
-    path = "terraform.tfstate"
+  backend "gcs" {
+    bucket = "gca-st-eval-suite-testing-10-tfstate"
+    prefix = "terraform/state"
   }
 }
 
