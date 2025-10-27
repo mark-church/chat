@@ -25,7 +25,7 @@ resource "google_artifact_registry_repository" "main" {
 
 resource "google_cloud_run_v2_service" "main" {
   project  = var.project_id
-  name     = var.app_name
+  name     = var.service_name
   location = var.region
 
   template {

@@ -27,3 +27,7 @@ variable "app_service_account_email" {
   description = "The email of the service account for the application."
   type        = string
 }
+variable "service_name" {
+  description = "The name of the Cloud Run service."
+  type        = string
+}

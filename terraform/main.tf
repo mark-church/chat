@@ -21,6 +21,7 @@ module "app" {
   db_name                 = var.db_name
   db_user                 = var.db_user
   app_service_account_email = module.infra.app_service_account_email
+  service_name              = var.cloud_run_service_name
 }
 
 module "cicd" {
@@ -31,4 +32,5 @@ module "cicd" {
   github_owner                  = var.github_owner
   github_repo_name              = var.github_repo_name
   artifact_registry_repository_id = module.app.artifact_registry_repository_id
+  service_name                  = var.cloud_run_service_name
 }
