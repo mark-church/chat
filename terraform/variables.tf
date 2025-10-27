@@ -51,8 +51,3 @@ variable "github_repo_name" {
   type        = string
 }
 
-variable "cloud_run_service_name" {
-  description = "The name of the Cloud Run service to update."
-  type        = string
-}
-
