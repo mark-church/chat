@@ -60,7 +60,7 @@ resource "google_cloudbuild_trigger" "main" {
         EOT
       ]
     }
-    images = ["$_IMAGE_NAME"]
+    images = ["$_IMAGE_NAME:$COMMIT_SHA"]
   }
   options {
     logging = "CLOUD_LOGGING_ONLY"
