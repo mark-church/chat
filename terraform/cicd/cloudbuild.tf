@@ -49,7 +49,7 @@ resource "google_cloudbuild_trigger" "main" {
 
           echo "Updating ${_SERVICE_NAME} CR image..."
           # JQ command from YAML, only service name is parameterized, using _IMAGE_NAME
-          jq 'map(if .parameters[] | select(.key == "service_name").value == "'"${_SERVICE_NAME}"'" then .parameters |= map(if .key == "containers" then .value |= map(.container_image = "'"${_IMAGE_NAME}"'") else . end) else . end)' component_parameters.json > temp.json && mv temp.json component_parameters.json
+          jq 'map(if .parameters[] | select(.key == "service_name").value == "'"${_SERVICE_NAME}"'" then .parameters |= map(if .key == "containers" then .value |= map(.container_image = "'"${_IMAGE_NAME}:${COMMIT_SHA}"'") else . end) else . end)' component_parameters.json > temp.json && mv temp.json component_parameters.json
 
           gcloud alpha design-center spaces applications update test-application-cicd --space=test-space --project=$PROJECT_ID --location=us-central1 --component-parameters=component_parameters.json
 
