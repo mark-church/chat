@@ -32,3 +32,8 @@ variable "service_name" {
   description = "The name of the Cloud Run service to update in the build."
   type        = string
 }
+
+variable "space" {
+  description = "The Design Center space name."
+  type        = string
+}

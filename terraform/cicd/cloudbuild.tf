@@ -28,6 +28,9 @@ resource "google_cloudbuild_trigger" "main" {
   substitutions = {
     _IMAGE_NAME = "${var.region}-docker.pkg.dev/${var.project_id}/${var.app_name}-repo"
     _SERVICE_NAME = var.service_name
+    _SPACE        = var.space
+    _APP_NAME     = var.app_name
+    _REGION       = var.region
   }
 
   build {
@@ -45,17 +48,17 @@ resource "google_cloudbuild_trigger" "main" {
           apt-get update && apt-get install -y jq curl
 
           echo "Fetching latest app config..."
-          gcloud alpha design-center spaces applications describe test-application-cicd --space=test-space --project=$PROJECT_ID --location=us-central1 --format="json(componentParameters)" | jq '.componentParameters | map(del(.state, .componentParameterSchema))' > component_parameters.json
+          gcloud alpha design-center spaces applications describe ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${_REGION} --format="json(componentParameters)" | jq '.componentParameters | map(del(.state, .componentParameterSchema))' > component_parameters.json
 
           echo "Updating ${_SERVICE_NAME} CR image..."
           # JQ command from YAML, only service name is parameterized, using _IMAGE_NAME
           jq 'map(if .parameters[] | select(.key == "service_name").value == "'"${_SERVICE_NAME}"'" then .parameters |= map(if .key == "containers" then .value |= map(.container_image = "'"${_IMAGE_NAME}:${COMMIT_SHA}"'") else . end) else . end)' component_parameters.json > temp.json && mv temp.json component_parameters.json
 
-          gcloud alpha design-center spaces applications update test-application-cicd --space=test-space --project=$PROJECT_ID --location=us-central1 --component-parameters=component_parameters.json
+          gcloud alpha design-center spaces applications update ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${_REGION} --component-parameters=component_parameters.json
 
           echo "Deploying application....."
-          gcloud alpha design-center spaces applications deploy test-application-cicd --space=test-space --project=$PROJECT_ID --location=us-central1 --async
-
+          gcloud alpha design-center spaces applications deploy ${_APP_NAME} --space=${_SPACE} --project=$PROJECT_ID --location=${_REGION} --async
+          
           rm -f component_parameters.json
         EOT
       ]
