@@ -68,7 +68,7 @@ class StreamlitReader(HttpUser):
         """
         channel = random.choice(CHANNELS)
         # The 'name' parameter groups all these requests under one entry in the UI
-        self.client.get(f"/?channel={channel}", name="/?channel=[channel]")
+        self.client.get(f"/?channel={channel}", name="/?channel=[channel]", verify=False)
 
 class ApiWriter(HttpUser):
     """
@@ -95,4 +95,5 @@ class ApiWriter(HttpUser):
                 "avatar": avatar,
                 "channel": channel,
             },
+            verify=False,
         )

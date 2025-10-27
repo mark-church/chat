@@ -5,8 +5,8 @@ chat.db
 terraform/.terraform/
 
 # Terraform state files
-terraform/terraform.tfstate
-terraform/terraform.tfstate.backup
+**/*.tfstate
+**/*.tfstate.backup
 
 # Ignore self-signed certificates
 terraform/infra/self-signed.crt
