@@ -31,4 +31,5 @@ module "cicd" {
   github_owner                  = var.github_owner
   github_repo_name              = var.github_repo_name
   artifact_registry_repository_id = module.app.artifact_registry_repository_id
+  service_name                  = module.app.cloud_run_service_name
 }
