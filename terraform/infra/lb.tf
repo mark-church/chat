@@ -19,38 +19,11 @@ resource "google_compute_global_address" "main" {
   name    = "${var.app_name}-lb-ip"
 }
 
-# Generate a private key for the self-signed certificate
-resource "tls_private_key" "lb_key" {
-  algorithm = "RSA"
-  rsa_bits  = 2048
-}
-
-# Generate a self-signed certificate using the private key
-resource "tls_self_signed_cert" "lb_cert" {
-  private_key_pem = tls_private_key.lb_key.private_key_pem
-
-  subject {
-    common_name  = "${var.app_name}.example.com" # You can customize this
-    organization = "Terraform Generated"
-  }
-
-  validity_period_hours = 8760 # 1 year
-  allowed_uses = [
-    "key_encipherment",
-    "digital_signature",
-    "server_auth",
-  ]
-}
-
-# Create the Google Cloud SSL Certificate resource for the load balancer
 resource "google_compute_ssl_certificate" "main" {
   project      = var.project_id
   name         = "${var.app_name}-self-signed-ssl-cert"
-  private_key  = tls_private_key.lb_key.private_key_pem   # Use output from tls provider
-  certificate  = tls_self_signed_cert.lb_cert.cert_pem      # Use output from tls provider
-  lifecycle {
-    create_before_destroy = true
-  }
+  private_key  = file("${path.module}/self-signed.key")
+  certificate  = file("${path.module}/self-signed.crt")
 }
 
 resource "google_compute_backend_service" "main" {
