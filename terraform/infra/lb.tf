@@ -33,24 +33,30 @@ resource "google_compute_backend_service" "main" {
   port_name = "http"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 
-  backend {
-    group = google_compute_region_network_endpoint_group.main.id
+  dynamic "backend" {
+    for_each = google_compute_region_network_endpoint_group.main
+    content {
+      group = backend.value.id
+    }
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 
-data "google_cloud_run_v2_service" "main" {
-  project  = var.project_id
-  name     = var.app_name
-  location = var.region
-}
-
 resource "google_compute_region_network_endpoint_group" "main" {
+  for_each              = toset(var.app_regions)
   project               = var.project_id
-  name                  = "${var.app_name}-neg"
-  region                = var.region
+  name                  = "${var.app_name}-neg-${each.key}"
+  region                = each.key
   network_endpoint_type = "SERVERLESS"
   cloud_run {
-    service = data.google_cloud_run_v2_service.main.name
+    service = var.cloud_run_service_names[each.key]
+  }
+
+  lifecycle {
+    create_before_destroy = true
   }
 }
 

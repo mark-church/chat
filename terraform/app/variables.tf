@@ -27,3 +27,8 @@ variable "app_service_account_email" {
   description = "The email of the service account for the application."
   type        = string
 }
+
+variable "app_regions" {
+  description = "The regions to deploy the application to."
+  type        = list(string)
+}

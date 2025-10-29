@@ -8,20 +8,23 @@ terraform {
 }
 
 module "infra" {
-  source     = "./infra"
-  project_id = var.project_id
-  region     = var.region
-  app_name   = var.app_name
-}
-
-module "app" {
-  source                  = "./app"
+  source                  = "./infra"
   project_id              = var.project_id
   region                  = var.region
   app_name                = var.app_name
-  db_name                 = var.db_name
-  db_user                 = var.db_user
+  app_regions             = var.app_regions
+  cloud_run_service_names = module.app.cloud_run_service_name
+}
+
+module "app" {
+  source                    = "./app"
+  project_id                = var.project_id
+  region                    = var.region
+  app_name                  = var.app_name
+  db_name                   = var.db_name
+  db_user                   = var.db_user
   app_service_account_email = module.infra.app_service_account_email
+  app_regions               = var.app_regions
 }
 
 module "cicd" {

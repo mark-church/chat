@@ -51,3 +51,9 @@ variable "github_repo_name" {
   type        = string
 }
 
+variable "app_regions" {
+  description = "The regions to deploy the application to."
+  type        = list(string)
+  default     = ["us-central1"]
+}
+

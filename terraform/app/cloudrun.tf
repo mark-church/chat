@@ -24,15 +24,16 @@ resource "google_artifact_registry_repository" "main" {
 
 
 resource "google_cloud_run_v2_service" "main" {
+  for_each = toset(var.app_regions)
   project  = var.project_id
-  name     = var.app_name
-  location = var.region
+  name     = "${var.app_name}-${each.key}"
+  location = each.key
 
   template {
     service_account = var.app_service_account_email
 
     containers {
-      image = "${var.region}-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${data.archive_file.source.output_sha}"
+      image = "us-central1-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${data.archive_file.source.output_sha}"
       ports {
         container_port = 8080
       }
@@ -68,12 +69,17 @@ resource "google_cloud_run_v2_service" "main" {
   depends_on = [
     null_resource.gcloud_build
   ]
+
+  lifecycle {
+    create_before_destroy = true
+  }
 }
 
 resource "google_cloud_run_v2_service_iam_binding" "allow_unauthenticated" {
-  project  = google_cloud_run_v2_service.main.project
-  location = google_cloud_run_v2_service.main.location
-  name     = google_cloud_run_v2_service.main.name
+  for_each = google_cloud_run_v2_service.main
+  project  = each.value.project
+  location = each.value.location
+  name     = each.value.name
   role     = "roles/run.invoker"
-  members   = ["allUsers"]
+  members  = ["allUsers"]
 }
