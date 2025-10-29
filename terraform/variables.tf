@@ -20,25 +20,21 @@ variable "project_id" {
 variable "region" {
   description = "The region to deploy to."
   type        = string
-  default     = "us-central1"
 }
 
 variable "app_name" {
   description = "The name of the application."
   type        = string
-  default     = "chat-app"
 }
 
 variable "db_name" {
   description = "The name of the database."
   type        = string
-  default     = "chat-db"
 }
 
 variable "db_user" {
   description = "The name of the database user."
   type        = string
-  default     = "chat-user"
 }
 
 variable "github_owner" {
@@ -54,6 +50,14 @@ variable "github_repo_name" {
 variable "app_regions" {
   description = "The regions to deploy the application to."
   type        = list(string)
-  default     = ["us-central1"]
 }
 
+variable "adc_application_name" {
+  description = "The name of the Application Design Center application."
+  type        = string
+}
+
+variable "adc_space_name" {
+  description = "The name of the Application Design Center space."
+  type        = string
+}
