@@ -33,6 +33,8 @@ resource "google_cloudbuildv2_repository" "main" {
   remote_uri        = "https://github.com/${var.github_owner}/${var.github_repo_name}.git"
 }
 
+
+# THIS RESOURCE BLOCK IS NOT WORKING AND IS NOT APPLIED IN THE CURRENT TERRAFORM STATE FILE
 resource "google_cloudbuild_trigger" "main" {
   project  = var.project_id
   name     = "${var.app_name}-build-trigger"
