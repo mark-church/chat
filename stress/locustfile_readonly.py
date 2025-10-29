@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 #
-# This file is used to stress test the Streamlit and FastAPI application.
+# This file is used to stress test the Streamlit application with READ-ONLY traffic.
 #
 # To run this test:
 # 1. Make sure you have locust installed (`pip install locust`).
 # 2. Run the command below from your terminal in the project root directory.
 #
 # Example command to run locust:
-# locust -f stress/locustfile.py --host http://your-app-url.com --users 100 --spawn-rate 10 --run-time 5m --headless
+# locust -f stress/locustfile_readonly.py --host http://your-app-url.com --users 100 --spawn-rate 10 --run-time 5m --headless
 #
 # - http://your-app-url.com: The URL of your deployed application.
 # - --users: Total number of concurrent users to simulate.
@@ -22,11 +22,8 @@ from locust import HttpUser, task, between
 # --- CONFIGURATION ---
 
 # 1. User Behavior Weights
-# Controls the ratio of reading users to writing users.
-# For example, a weight of 3 for readers and 1 for writers means for every
-# 4 users, 3 will be readers and 1 will be a writer (75% read / 25% write).
-READER_WEIGHT = 5
-WRITER_WEIGHT = 1
+# This test is for readers only.
+READER_WEIGHT = 1
 
 # 2. Test Data
 # This data is used by the simulated users to generate realistic traffic.
@@ -59,7 +56,7 @@ class StreamlitReader(HttpUser):
     Streamlit application page. This generates read load on the database.
     """
     weight = READER_WEIGHT
-    wait_time = between(0.2, 0.5)  # Readers are a bit slower
+    wait_time = between(2, 5)  # Readers are a bit slower
 
     @task
     def load_main_page(self):
@@ -69,31 +66,3 @@ class StreamlitReader(HttpUser):
         channel = random.choice(CHANNELS)
         # The 'name' parameter groups all these requests under one entry in the UI
         self.client.get(f"/?channel={channel}", name="/?channel=[channel]", verify=False)
-
-class ApiWriter(HttpUser):
-    """
-    Simulates a user who is only WRITING messages by posting directly
-    to the /send_message API endpoint. This generates write load.
-    """
-    weight = WRITER_WEIGHT
-    wait_time = between(0.1, 0.3)  # Writers are a bit faster
-
-    @task
-    def send_message(self):
-        """
-        Picks a random user, channel, and message, then sends it to the API.
-        """
-        username, avatar = random.choice(USER_LIST)
-        channel = random.choice(CHANNELS)
-        message_text = random.choice(SAMPLE_MESSAGES)
-
-        self.client.post(
-            "/send_message",
-            json={
-                "username": username,
-                "message": message_text,
-                "avatar": avatar,
-                "channel": channel,
-            },
-            verify=False,
-        )
