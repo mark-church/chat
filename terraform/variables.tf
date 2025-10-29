@@ -51,3 +51,15 @@ variable "github_repo_name" {
   type        = string
 }
 
+variable "adc_application_name" {
+  description = "The name of the Application Design Center application."
+  type        = string
+  default     = "test-application-cicd"
+}
+
+variable "adc_space_name" {
+  description = "The name of the Application Design Center space."
+  type        = string
+  default     = "test-space"
+}
+
