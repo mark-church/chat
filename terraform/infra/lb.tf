@@ -33,6 +33,11 @@ resource "google_compute_backend_service" "main" {
   port_name = "http"
   load_balancing_scheme = "EXTERNAL_MANAGED"
 
+  log_config {
+    enable      = true
+    sample_rate = 1.0
+  }
+
   dynamic "backend" {
     for_each = google_compute_region_network_endpoint_group.main
     content {
