@@ -31,7 +31,11 @@ resource "google_cloud_run_v2_service" "main" {
 
   template {
     service_account = var.app_service_account_email
-    max_instance_request_concurrency = 20
+    max_instance_request_concurrency = 40
+
+    scaling {
+      max_instance_count = 20
+    }
 
     containers {
       image = "us-central1-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${data.archive_file.source.output_sha}"

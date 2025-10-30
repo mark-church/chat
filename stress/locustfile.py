@@ -53,10 +53,10 @@ SAMPLE_MESSAGES = [
 
 # --- LOCUST USER CLASSES (No need to edit below this line) ---
 
-class StreamlitReader(HttpUser):
+class FlaskReader(HttpUser):
     """
     Simulates a user who is only READING messages by loading the main
-    Streamlit application page. This generates read load on the database.
+    Flask application page. This generates read load on the database.
     """
     weight = READER_WEIGHT
     wait_time = between(0.2, 0.5)  # Readers are a bit slower
@@ -64,16 +64,17 @@ class StreamlitReader(HttpUser):
     @task
     def load_main_page(self):
         """
-        Loads the root page for a random channel to simulate reading.
+        Loads the root page for a random channel and user to simulate reading.
         """
         channel = random.choice(CHANNELS)
+        username, _ = random.choice(USER_LIST)
         # The 'name' parameter groups all these requests under one entry in the UI
-        self.client.get(f"/?channel={channel}", name="/?channel=[channel]", verify=False)
+        self.client.get(f"/?channel={channel}&user={username}", name="/?channel=[channel]&user=[user]", verify=False)
 
-class ApiWriter(HttpUser):
+class FlaskWriter(HttpUser):
     """
-    Simulates a user who is only WRITING messages by posting directly
-    to the /send_message API endpoint. This generates write load.
+    Simulates a user who is WRITING messages by posting a form
+    to the /send endpoint. This generates write load.
     """
     weight = WRITER_WEIGHT
     wait_time = between(0.1, 0.3)  # Writers are a bit faster
@@ -81,19 +82,20 @@ class ApiWriter(HttpUser):
     @task
     def send_message(self):
         """
-        Picks a random user, channel, and message, then sends it to the API.
+        Picks a random user, channel, and message, then sends it as form data.
         """
         username, avatar = random.choice(USER_LIST)
         channel = random.choice(CHANNELS)
         message_text = random.choice(SAMPLE_MESSAGES)
 
         self.client.post(
-            "/send_message",
-            json={
+            "/send",
+            {
                 "username": username,
                 "message": message_text,
                 "avatar": avatar,
                 "channel": channel,
             },
             verify=False,
+            name="/send"
         )

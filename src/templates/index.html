@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Chat App</title>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body>
+    <div id="sidebar">
+        <h2>Channels</h2>
+        <ul class="nav flex-column">
+            {% for c in channels %}
+            <li class="nav-item">
+                <a class="nav-link {% if c == channel %}active{% endif %}" href="/?channel={{ c }}">{{ c }}</a>
+            </li>
+            {% endfor %}
+        </ul>
+    </div>
+    <div id="chat-container">
+        <h1>#{{ channel }}</h1>
+        <div id="messages">
+            {% include '_messages.html' %}
+        </div>
+        <form action="/send" method="post">
+            <div class="input-group">
+                <input type="text" name="message" class="form-control" placeholder="What is up?" required>
+                <input type="hidden" name="username" value="{{ username }}">
+                <input type="hidden" name="avatar" value="{{ avatar }}">
+                <input type="hidden" name="channel" value="{{ channel }}">
+                <div class="input-group-append">
+                    <button class="btn btn-primary" type="submit">Send</button>
+                </div>
+            </div>
+        </form>
+    </div>
+    <script>
+        window.addEventListener('load', function() {
+            var messagesContainer = document.getElementById('messages');
+            messagesContainer.scrollTop = messagesContainer.scrollHeight;
+        });
+    </script>
+</body>
+</html>

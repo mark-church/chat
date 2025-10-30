@@ -1,0 +1,9 @@
+{% for message in messages %}
+<div class="message-container {% if message.username == username %}current-user{% else %}other-user{% endif %}">
+    <div class="avatar">{{ message.avatar }}</div>
+    <div class="message-content">
+        <p><strong>{{ message.username }}</strong></p>
+        <p>{{ message.message }}</p>
+    </div>
+</div>
+{% endfor %}

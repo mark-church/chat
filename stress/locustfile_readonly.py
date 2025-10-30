@@ -50,10 +50,10 @@ SAMPLE_MESSAGES = [
 
 # --- LOCUST USER CLASSES (No need to edit below this line) ---
 
-class StreamlitReader(HttpUser):
+class FlaskReader(HttpUser):
     """
     Simulates a user who is only READING messages by loading the main
-    Streamlit application page. This generates read load on the database.
+    Flask application page. This generates read load on the database.
     """
     weight = READER_WEIGHT
     wait_time = between(2, 5)  # Readers are a bit slower
@@ -61,8 +61,9 @@ class StreamlitReader(HttpUser):
     @task
     def load_main_page(self):
         """
-        Loads the root page for a random channel to simulate reading.
+        Loads the root page for a random channel and user to simulate reading.
         """
         channel = random.choice(CHANNELS)
+        username, _ = random.choice(USER_LIST)
         # The 'name' parameter groups all these requests under one entry in the UI
-        self.client.get(f"/?channel={channel}", name="/?channel=[channel]", verify=False)
+        self.client.get(f"/?channel={channel}&user={username}", name="/?channel=[channel]&user=[user]", verify=False)
