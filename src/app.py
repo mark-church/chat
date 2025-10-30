@@ -1,8 +1,23 @@
-import streamlit as st
 import random
-from streamlit_autorefresh import st_autorefresh
+import time
+import logging
+
+import google.cloud.logging
 import sqlalchemy
+import streamlit as st
+from streamlit_autorefresh import st_autorefresh
+
 import database
+
+# --- LOGGING SETUP ---
+# Instantiates a client
+client = google.cloud.logging.Client()
+
+# Retrieves a Cloud Logging handler based on the environment
+# you're running in and integrates the handler with the
+# Python logging module. By default this captures all logs
+# at INFO level and higher.
+client.setup_logging()
 
 # --- DATABASE SETUP ---
 engine = database.connect_with_connector()
@@ -101,37 +116,50 @@ st.markdown("""
 """, unsafe_allow_html=True)
 
 def show_messages(channel):
-    with engine.connect() as conn:
-        result = conn.execute(
-            sqlalchemy.text(
-                "SELECT username, message, avatar FROM messages WHERE channel = :channel ORDER BY timestamp ASC"
-            ),
-            {"channel": channel},
-        )
-        messages = result.fetchall()
-        for username, message, avatar in messages:
-            display_name = "user" if username == st.session_state.user_info[0] else username
-            with st.chat_message(display_name, avatar=avatar):
-                st.markdown(f"**{username}**")
-                st.write(f"{message}")
+    try:
+        start_time = time.time()
+        with engine.connect() as conn:
+            # Fetch all messages in a single query
+            result = conn.execute(
+                sqlalchemy.text(
+                    "SELECT username, message, avatar FROM messages WHERE channel = :channel ORDER BY timestamp ASC"
+                ),
+                {"channel": channel},
+            )
+            messages = result.fetchall()
+
+            for username, message, avatar in messages:
+                display_name = "user" if username == st.session_state.user_info[0] else username
+                with st.chat_message(display_name, avatar=avatar):
+                    st.markdown(f"**{username}**")
+                    st.write(f"{message}")
+        duration = time.time() - start_time
+        logging.info(f"Loaded messages for channel '{channel}' in {duration:.2f} seconds.")
+    except Exception as e:
+        logging.error(f"Failed to fetch messages for channel '{channel}': {e}", exc_info=True)
+        st.error("Failed to load messages. Please try again later.")
 
 show_messages(current_channel)
 
 if prompt := st.chat_input("What is up?"):
     username, avatar = st.session_state.user_info
-    with engine.connect() as conn:
-        conn.execute(
-            sqlalchemy.text(
-                "INSERT INTO messages (username, message, avatar, channel) VALUES (:username, :message, :avatar, :channel)"
-            ),
-            {
-                "username": username,
-                "message": prompt,
-                "avatar": avatar,
-                "channel": current_channel,
-            },
-        )
-        conn.commit()
-    st.rerun()
+    try:
+        with engine.connect() as conn:
+            conn.execute(
+                sqlalchemy.text(
+                    "INSERT INTO messages (username, message, avatar, channel) VALUES (:username, :message, :avatar, :channel)"
+                ),
+                {
+                    "username": username,
+                    "message": prompt,
+                    "avatar": avatar,
+                    "channel": current_channel,
+                },
+            )
+            conn.commit()
+        st.rerun()
+    except Exception as e:
+        logging.error(f"Failed to send message for user '{username}' in channel '{current_channel}': {e}", exc_info=True)
+        st.error("Failed to send message. Please check your connection and try again.")
 
 st_autorefresh(interval=5000, limit=None)

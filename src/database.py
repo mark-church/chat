@@ -1,5 +1,6 @@
 import os
 import sqlalchemy
+import logging
 
 # --- DATABASE SETUP ---
 def connect_with_connector() -> sqlalchemy.engine.base.Engine:
@@ -30,9 +31,17 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
         )
         return conn
 
+    logging.info("Creating SQLAlchemy engine with 5s pool timeout and 10s statement timeout.")
     engine = sqlalchemy.create_engine(
         "postgresql+pg8000://",
         creator=getconn,
+        # How long to wait for a connection from the pool.
+        pool_timeout=5,
+        # Arguments passed directly to the pg8000 driver.
+        connect_args={
+            # How long a single SQL query can run (in seconds).
+            "timeout": 10
+        }
     )
     return engine
 

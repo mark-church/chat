@@ -2,6 +2,12 @@ from fastapi import FastAPI, HTTPException
 from pydantic import BaseModel
 import sqlalchemy
 import database
+import logging
+import google.cloud.logging
+
+# --- LOGGING SETUP ---
+client = google.cloud.logging.Client()
+client.setup_logging()
 
 app = FastAPI()
 engine = database.connect_with_connector()
@@ -19,6 +25,7 @@ def send_message(message: Message):
     """
     Receives a message and inserts it into the database.
     """
+    logging.info(f"Received message from user '{message.username}' for channel '{message.channel}'.")
     try:
         with engine.connect() as conn:
             conn.execute(
@@ -35,4 +42,5 @@ def send_message(message: Message):
             conn.commit()
         return {"status": "success", "message": "Message sent"}
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        logging.error(f"Database error sending message for user '{message.username}': {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="An internal error occurred while sending the message.")

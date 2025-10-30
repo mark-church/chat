@@ -7,3 +7,7 @@ cloud-sql-python-connector[pg8000]
 streamlit-autorefresh
 names
 supervisor
+google-cloud-logging
+
+
+
