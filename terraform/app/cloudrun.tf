@@ -46,12 +46,14 @@ resource "google_cloud_run_v2_service" "main" {
       startup_probe {
         failure_threshold = 3
         period_seconds    = 10
+        timeout_seconds   = 10
         http_get {
           path = "/healthz"
           port = 8080
         }
       }
       liveness_probe {
+        timeout_seconds   = 10
         http_get {
           path = "/healthz"
           port = 8080
