@@ -12,15 +12,13 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-
-
 resource "google_sql_database_instance" "main" {
   project             = var.project_id
   name                = "${var.app_name}-db-instance"
   region              = var.region
   database_version    = "POSTGRES_14"
   settings {
-    tier = "db-g1-small"
+    tier = "db-custom-4-16384"
   }
   deletion_protection = false
 }

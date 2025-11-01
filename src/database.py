@@ -40,7 +40,7 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
         # Arguments passed directly to the pg8000 driver.
         connect_args={
             # How long a single SQL query can run (in seconds).
-            "timeout": 10
+            "timeout": 20
         }
     )
     return engine
