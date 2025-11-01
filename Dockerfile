@@ -7,13 +7,13 @@ RUN apt-get update && apt-get install -y nginx supervisor netcat-traditional && 
 # Set the working directory in the container
 WORKDIR /app
 
-# Copy Python dependencies and install them into a virtual environment
+# Copy Python dependencies and install them
 COPY requirements.txt .
-RUN python -m venv .venv
-RUN . .venv/bin/activate && pip install --no-cache-dir -r requirements.txt
+RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the application code and configs
 COPY src/ /app/src
+COPY stress/ /app/stress
 COPY nginx.conf /etc/nginx/nginx.conf
 COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 

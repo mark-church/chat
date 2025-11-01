@@ -32,3 +32,9 @@ variable "app_regions" {
   description = "The regions to deploy the application to."
   type        = list(string)
 }
+
+variable "manual_build_tag" {
+  description = "A string that can be changed to manually trigger a new container build."
+  type        = string
+  default     = "v1"
+}

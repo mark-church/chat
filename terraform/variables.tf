@@ -61,3 +61,9 @@ variable "adc_space_name" {
   description = "The name of the Application Design Center space."
   type        = string
 }
+
+variable "manual_build_tag" {
+  description = "A container image tag that is manually built and pushed to the Artifact Registry. If this variable is specified, the standard Cloud Build pipeline will be disabled."
+  type        = string
+  default     = null
+}

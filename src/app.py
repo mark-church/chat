@@ -30,6 +30,19 @@ CHANNELS = ["general", "random", "tech"]
 
 app = Flask(__name__)
 
+@app.route("/healthz")
+def healthz():
+    """
+    Health check endpoint that also checks the database connection.
+    """
+    try:
+        with engine.connect() as conn:
+            conn.execute(sqlalchemy.text("SELECT 1"))
+        return {"status": "healthy"}
+    except Exception as e:
+        logging.error(f"Health check failed: {e}", exc_info=True)
+        return {"status": "unhealthy"}, 500
+
 @app.route("/")
 def index():
     """

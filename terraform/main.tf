@@ -25,6 +25,7 @@ module "app" {
   db_user                   = var.db_user
   app_service_account_email = module.infra.app_service_account_email
   app_regions               = var.app_regions
+  manual_build_tag          = var.manual_build_tag
 }
 
 module "cicd" {
@@ -38,4 +39,9 @@ module "cicd" {
   adc_application_name            = var.adc_application_name
   adc_space_name                  = var.adc_space_name
   adc_target_service_name         = module.app.cloud_run_service_name[var.region]
+  app_service_account_email       = module.infra.app_service_account_email
+  public_app_url                  = "https://${module.infra.lb_ip_address}"
+  app_regions                     = var.app_regions
+  repo_name                       = var.github_repo_name
+  app_image_url                   = module.app.app_image_url
 }

@@ -31,16 +31,31 @@ resource "google_cloud_run_v2_service" "main" {
 
   template {
     service_account = var.app_service_account_email
-    max_instance_request_concurrency = 40
+    max_instance_request_concurrency = 80
+    timeout = "30s"
 
     scaling {
-      max_instance_count = 20
+      max_instance_count = 10
     }
 
     containers {
-      image = "us-central1-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${data.archive_file.source.output_sha}"
+      image = "us-central1-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${var.manual_build_tag}"
       ports {
         container_port = 8080
+      }
+      startup_probe {
+        failure_threshold = 3
+        period_seconds    = 10
+        http_get {
+          path = "/healthz"
+          port = 8080
+        }
+      }
+      liveness_probe {
+        http_get {
+          path = "/healthz"
+          port = 8080
+        }
       }
       env {
         name  = "INSTANCE_CONNECTION_NAME"
