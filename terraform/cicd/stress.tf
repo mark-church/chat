@@ -137,5 +137,5 @@ resource "google_compute_global_forwarding_rule" "locust_forwarding_rule" {
 
 output "locust_lb_public_ip" {
   description = "The public IP address of the Locust Load Balancer."
-  value       = google_compute_global_address.locust_lb_ip.address
+  value       = "http://${google_compute_global_address.locust_lb_ip.address}"
 }

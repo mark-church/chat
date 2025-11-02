@@ -42,5 +42,5 @@ module "cicd" {
   public_app_url                  = "https://${module.infra.lb_ip_address}"
   app_regions                     = var.app_regions
   repo_name                       = var.github_repo_name
-  app_image_url                   = module.app.app_image_url
+  app_image_url                   = module.app.image_by_tag
 }
