@@ -57,7 +57,7 @@ resource "google_compute_region_network_endpoint_group" "main" {
   region                = each.key
   network_endpoint_type = "SERVERLESS"
   cloud_run {
-    service = var.cloud_run_service_names[each.key]
+    service = "${var.app_name}-${each.key}"
   }
 
   lifecycle {

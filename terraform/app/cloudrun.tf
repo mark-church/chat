@@ -38,6 +38,13 @@ resource "google_cloud_run_v2_service" "main" {
       max_instance_count = 10
     }
 
+    volumes {
+      name = "cloudsql"
+      cloud_sql_instance {
+        instances = [google_sql_database_instance.main.connection_name]
+      }
+    }
+
     containers {
       image = "us-central1-docker.pkg.dev/${var.project_id}/${google_artifact_registry_repository.main.repository_id}/${var.app_name}:${var.manual_build_tag}"
       ports {
@@ -80,11 +87,10 @@ resource "google_cloud_run_v2_service" "main" {
         name  = "DB_NAME"
         value = google_sql_database.main.name
       }
-    }
-
-    containers {
-      image = "gcr.io/cloud-sql-connectors/cloud-sql-proxy"
-      args  = ["--structured-logs", "--port=5432", google_sql_database_instance.main.connection_name]
+      volume_mounts {
+        name = "cloudsql"
+        mount_path = "/cloudsql"
+      }
     }
   }
 

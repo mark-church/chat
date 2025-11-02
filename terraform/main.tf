@@ -13,7 +13,6 @@ module "infra" {
   region                  = var.region
   app_name                = var.app_name
   app_regions             = var.app_regions
-  cloud_run_service_names = module.app.cloud_run_service_name
 }
 
 module "app" {
