@@ -14,7 +14,7 @@ client.setup_logging()
 
 # --- DATABASE SETUP ---
 engine = database.connect_with_connector()
-database.create_tables(engine)
+database.initialize_database(engine)
 
 # --- USER AND AVATAR SETUP ---
 USER_LIST = [
@@ -37,11 +37,9 @@ def healthz():
     """
     Health check endpoint that also checks the database connection.
     """
-    logging.info("Health check requested.")
     try:
         with engine.connect() as conn:
             conn.execute(sqlalchemy.text("SELECT 1"))
-        logging.info("Health check successful.")
         return {"status": "healthy"}
     except Exception as e:
         logging.error(f"Health check failed: {e}", exc_info=True)
@@ -66,7 +64,6 @@ def index():
         return redirect(url_for("index", channel=channel, user=username))
 
     avatar = user_map[username]
-    logging.info(f"Fetching messages for user '{username}' in channel '{channel}'.")
 
     try:
         start_time = time.time()
@@ -84,7 +81,6 @@ def index():
         logging.error(f"Failed to fetch messages for channel '{channel}': {e}", exc_info=True)
         messages = []
 
-    logging.info(f"Rendering template for user '{username}' in channel '{channel}'.")
     return render_template(
         "index.html",
         channels=CHANNELS,
@@ -103,7 +99,6 @@ def send():
     message = request.form["message"]
     avatar = request.form["avatar"]
     channel = request.form["channel"]
-    logging.info(f"User '{username}' is sending a message to channel '{channel}'.")
 
     try:
         with engine.connect() as conn:
@@ -119,7 +114,6 @@ def send():
                 },
             )
             conn.commit()
-        logging.info(f"Message from '{username}' successfully sent to channel '{channel}'.")
     except Exception as e:
         logging.error(f"Failed to send message for user '{username}' in channel '{channel}': {e}", exc_info=True)
 

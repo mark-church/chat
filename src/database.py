@@ -37,7 +37,7 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
                 password=db_pass,
                 db=db_name,
             )
-            logging.info("Database connection successful.")
+            logging.info(f"Database connection successful for user '{db_user}' to instance '{instance_connection_name}'.")
             return conn
         except Exception as e:
             logging.error(f"Database connection failed: {e}", exc_info=True)
@@ -65,7 +65,7 @@ def connect_with_connector() -> sqlalchemy.engine.base.Engine:
 
 def create_tables(engine: sqlalchemy.engine.base.Engine):
     """Creates the messages table if it does not already exist."""
-    logging.info("Checking and creating 'messages' table if it does not exist.")
+    logging.info("Creating 'messages' table.")
     try:
         with engine.connect() as conn:
             conn.execute(
@@ -83,9 +83,28 @@ def create_tables(engine: sqlalchemy.engine.base.Engine):
                 )
             )
             conn.commit()
-        logging.info("'messages' table is ready.")
+        logging.info("'messages' table created or already exists.")
     except Exception as e:
         logging.error(f"Error creating 'messages' table: {e}", exc_info=True)
+        raise
+
+def initialize_database(engine: sqlalchemy.engine.base.Engine):
+    """Checks if the messages table exists and creates it if it does not."""
+    logging.info("Starting database initialization check.")
+    try:
+        with engine.connect() as conn:
+            # The query checks the information_schema for the table's existence.
+            table_exists = conn.execute(sqlalchemy.text(
+                "SELECT EXISTS (SELECT 1 FROM information_schema.tables WHERE table_name = 'messages')"
+            )).scalar()
+
+        if not table_exists:
+            logging.info("The 'messages' table was not found. Creating it now.")
+            create_tables(engine)
+        else:
+            logging.info("The 'messages' table already exists. Skipping creation.")
+    except Exception as e:
+        logging.critical(f"A critical error occurred during the database initialization check: {e}", exc_info=True)
         raise
 
 if __name__ == '__main__':
