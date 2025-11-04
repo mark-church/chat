@@ -18,7 +18,7 @@ resource "google_sql_database_instance" "main" {
   region              = var.region
   database_version    = "POSTGRES_14"
   settings {
-    tier = "db-custom-4-16384"
+    tier = "db-g1-small"
   }
   deletion_protection = false
 }
